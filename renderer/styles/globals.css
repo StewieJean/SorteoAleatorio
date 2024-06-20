@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* styles/globals.css */
+
+.roulette-container {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+}
+
+.roulette-container > div {
+  width: 100%;
+  height: 100%;
+  max-width: unset;
+  max-height: unset;
+}
