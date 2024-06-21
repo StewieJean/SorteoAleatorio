@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from "react";
 import { Button, Input, Textarea, Text } from "@rewind-ui/core";
 import * as XLSX from "xlsx";
+import { useRouter } from 'next/router'
 
 const Formulario = () => {
   const [titulo, setTitulo] = useState("");
@@ -9,6 +10,7 @@ const Formulario = () => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
   const dragAreaRef = useRef(null);
+  const router = useRouter()
 
   const handleTituloChange = (e) => {
     setTitulo(e.target.value);
@@ -93,9 +95,7 @@ const Formulario = () => {
       participantes,
     };
     sessionStorage.setItem("formularioSorteo", JSON.stringify(formData));
-    setTitulo("");
-    setParticipantesText("");
-    setParticipantes([]);
+    router.push('/ShowParticipants/page')
   };
 
   const handleDragEnter = (e) => {
@@ -182,6 +182,7 @@ const Formulario = () => {
         </p>
       </div>
       <br />
+
       <Button
         color="purple"
         shadow="md"
@@ -189,7 +190,7 @@ const Formulario = () => {
         type="submit"
         disabled={!titulo || participantes.length === 0}
       >
-        Comenzar
+        Siguiente
       </Button>
       <Button
         tone="transparent"
