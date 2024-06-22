@@ -1,51 +1,38 @@
-import React, { useState, useEffect } from "react"
-import dynamic from "next/dynamic"
-const Wheel = dynamic(
-  () => import("react-custom-roulette").then((mod) => mod.Wheel),
-  {
-    ssr: false,
-  }
-)
+import React, { useState } from "react";
+import { animated, useSpring } from "react-spring";
 
-const Roulette = ({ data }) => {
-  if (data.length === 0) {
-    return <div>No existen participantes</div>;
-  }
+export default function App() {
+  const [numb, setNumb] = useState(999);
+  const [oscillationsCount, setOscillationsCount] = useState(0);
 
-  const wheelData = data.map(item => ({ option: item.text }));
+  const generateRandomNumber = () => {
+    const randomNo = Math.floor(Math.random() * 99);
+    setNumb(randomNo);
+    setOscillationsCount(0); // Reiniciar el contador de oscilaciones
+  };
+
+  const props = useSpring({
+    val: numb,
+    from: { val: numb },
+    to: async (next) => {
+      while (oscillationsCount < 5) { // Limitar a 5 oscilaciones, por ejemplo
+        await next({ val: numb + Math.random() * 100 - 50 });
+        await next({ val: numb });
+        setOscillationsCount(count => count + 1); // Incrementar el contador de oscilaciones
+      }
+    },
+    config: { duration: 1000 },
+    reset: true, // Reiniciar la animación cuando el estado de 'numb' cambia
+  });
 
   return (
-    <div align="center" className="roulette-container h-[800px]"  >
-      <Wheel
-
-        mustStartSpinning={false}
-        prizeNumber={Math.floor(Math.random() * data.length)}
-        data={wheelData}
-        backgroundColors={[
-          "#3f297e",
-          "#175fa9",
-          "#169ed8",
-          "#239b63",
-          "#64b031",
-          "#efe61f",
-          "#f7a416",
-          "#e6471d",
-          "#dc0936",
-          "#e5177b",
-          "#be1180",
-          "#871f7f"
-        ]}
-        textColors={['#ffffff']}
-        outerBorderWidth={2}
-        textDistance={50}
-        fontSize={[10]}
-        onStopSpinning={() => {
-          setMustSpin(false);
-        }}
-        radiusLineWidth={[1]} // Cambia este valor para ajustar el radio interior
-      />
+    <div className="App">
+      <div className="card">
+        <animated.h1>{props.val.to((val) => Math.floor(val))}</animated.h1>
+        <button className="btn" onClick={generateRandomNumber}>
+          Number Generator
+        </button>
+      </div>
     </div>
   );
-};
-
-export default Roulette;
+}

@@ -2,39 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 /* styles/globals.css */
-.ruleta-container {
-  position: relative;
-  width: 100%;
-  height: 200px; /* Ajusta la altura según sea necesario */
-}
+/* Roulette.module.css */
 
-.ruleta {
-  display: flex;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  overflow: hidden;
-}
-
-.participante {
-  flex: 0 0 auto;
-  width: 33.33%; /* Distribución equitativa de los participantes */
-  text-align: center;
-  font-size: 20px;
-  padding: 10px;
-}
-
-.linea-central {
-  position: absolute;
-  width: 2px;
-  height: 100%;
-  background-color: red; /* Color de la línea central */
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.ganador {
-  font-weight: bold;
-  color: red; /* Color del texto del ganador */
-}
+.roulette-container {
+    position: relative;
+    width: 650px;
+    max-width: 700px;
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+  
+  .roulette-container > div {
+    width: 100%;
+    height: 100%;
+    max-width: unset;
+    max-height: unset;
+  }
