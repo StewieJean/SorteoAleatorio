@@ -74,14 +74,6 @@ const ShowParticipants = () => {
     fetchData();
   }, []);
 
-  const cleanData = () => {
-    setParticipants([]);
-    setPrizeIndex(0);
-    setTitulo("");
-    setWinner(null);
-    setMustSpin(false);
-  };
-
   const shuffleParticipants = () => {
     const shuffled = [...participants];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -118,21 +110,23 @@ const ShowParticipants = () => {
     return <div>Cargando...</div>; // Puedes personalizar este mensaje de carga
   }
 
+  let fontSize;
+  if (participants.length < 10) {
+    fontSize = 10;
+  } else if (data.length < 20) {
+    fontSize = 12;
+  } else {
+    fontSize = 14;
+  }
+
   return (
     <div className="flex items-center ">
       {/* Columna izquierda (Tabla de participantes) */}
-      <div className=" p-4 border-r">
-        <div className="mb-4">
-          <Text className="text-lg">Título:</Text>
-          <Input
-            variant="pill"
-            className="mt-2 w-full"
-            type="text"
-            value={titulo}
-            readOnly
-          />
+      <div className=" p-4 ">
+        <div className="mb-2 border-b">
+          <Text className="text-xl font-semibold ">{titulo}</Text>
         </div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2 border-b pb-2">
           <Text className="text-lg">
             Total de participantes:{" "}
             <span className="text-purple-600">{participants.length}</span>
@@ -164,7 +158,7 @@ const ShowParticipants = () => {
           </Button>
         </div>
         <div className="overflow-auto">
-          <Table className="w-full border max-h-screen">
+          <Table className="w-full border max-h-[600px]">
             <thead>
               <tr>
                 <th className="border-b p-2 text-left">Nro.</th>
@@ -181,7 +175,7 @@ const ShowParticipants = () => {
             </tbody>
           </Table>
         </div>
-        <div className="sticky bottom-0 left-0 p-4 flex justify-end space-x-2 border-t w-full bg-white">
+        <div className="sticky bottom-0 left-0 p-4 flex justify-end space-x-2 border-t w-full border-t-1 mt-2">
           <Button
             color="purple"
             shadow="md"
@@ -196,14 +190,6 @@ const ShowParticipants = () => {
               Atrás
             </Button>
           </Link>
-          <Button
-            color="purple"
-            shadow="md"
-            shadowColor="dark"
-            onClick={cleanData}
-          >
-            Clean
-          </Button>
         </div>
       </div>
       {/* Columna derecha (Ruleta) */}
@@ -214,16 +200,19 @@ const ShowParticipants = () => {
               mustStartSpinning={mustSpin}
               prizeNumber={prizeIndex}
               data={data}
-              backgroundColors={["#4c1d95", "#8b5cf6"]}
+              backgroundColors={["#4c1d95", "#8b5cf6", "#2e1065", "#8b5cf6"]}
               textColors={["#ffffff"]}
               onStopSpinning={handleStopSpinning}
               innerRadius={10}
+              innerBorderColor="#ede9fe"
+              outerBorderColor="#ede9fe"
+              radiusLineColor="#ede9fe"
               innerBorderWidth={2}
               outerBorderWidth={2}
-              radiusLineWidth={0}
+              radiusLineWidth={1}
               perpendicularText
-              textDistance={90}
-              fontSize={10}
+              textDistance={93}
+              fontSize={9}
               className="mx-auto w-full"
             />
           </div>
@@ -235,7 +224,9 @@ const ShowParticipants = () => {
             </div>
           )}
         </div>
+        <Link href='/SortearParticipants/page'>sdasdasd</Link>
       </div>
+
     </div>
   );
 };

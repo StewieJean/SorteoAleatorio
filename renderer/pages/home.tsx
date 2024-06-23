@@ -13,7 +13,7 @@ function Home() {
 
           <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 w-full">
             <div className="text-center pb-12 md:pb-16">
-              <h1 className="text-5xl md:text-7xl font-extrabold leading-tighter tracking-tighter mb-4">
+              <h1 className="text-5xl md:text-7xl font-extrabold leading-tighter tracking-tighter mb-4 ">
                 Sorteo por nombres al azar
               </h1>
 
