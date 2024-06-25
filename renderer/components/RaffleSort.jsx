@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useTransition, animated } from "react-spring";
 import { Button } from "@rewind-ui/core";
 import Link from "next/link";
+
 // Función de barajado (Fisher-Yates)
 const shuffleArray = (array) => {
   const shuffledArray = [...array];
@@ -11,6 +12,17 @@ const shuffleArray = (array) => {
   }
   return shuffledArray;
 };
+
+// Generar un color aleatorio
+const getRandomColor = () => {
+  const letters = '0123456789ABCDEF';
+  let color = '#';
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+};
+
 
 const Raffle = () => {
   const [titulo, setTitulo] = useState("");
@@ -22,9 +34,14 @@ const Raffle = () => {
   useEffect(() => {
     const storedData = JSON.parse(sessionStorage.getItem("formularioSorteo"));
     if (storedData) {
+      const participantsWithIdAndColor = storedData.participantes.map((name, index) => ({
+        id: index,
+        name: name,
+        color: getRandomColor()
+      }));
       setTitulo(storedData.titulo);
-      setInitialParticipants(storedData.participantes);
-      setRemainingParticipants(storedData.participantes);
+      setInitialParticipants(participantsWithIdAndColor);
+      setRemainingParticipants(participantsWithIdAndColor);
     }
   }, []);
 
@@ -80,38 +97,33 @@ const Raffle = () => {
     leave: { opacity: 0 },
   });
 
+  let cantParticipants = (initialParticipants.length)
+  console.log(cantParticipants);
+
+
+
   return (
-    <div className="min-h-screen min-w-full flex flex-col">
-      <div className="sticky top-0 bg-violet-100 border-gray-300 p-4 z-10 text-center">
-        <h2 className="text-6xl font-bold mb-4">{titulo}</h2>
+    <div className="flex min-w-full min-h-screen flex-col">
+      <div className="z-10 p-4 bg-violet-100 border-gray-300 text-center sticky top-0">
+        <h2 className="text-6xl font-bold mb-2">{titulo}</h2>
+        <h6 className="pb-2 text-3xl">Participantes: {cantParticipants}</h6>
         <div className="flex justify-center">
-          <Button
-            className="mr-2"
-            onClick={shuffleParticipants}
-            disabled={running}
-          >
+          <Button className="mr-2" onClick={shuffleParticipants} disabled={running}>
             Shuffle
           </Button>
-          <Button
-            className="mr-2"
-            onClick={startRaffle}
-            disabled={running}
-          >
+          <Button className="mr-2" onClick={startRaffle} disabled={running}>
             Start
           </Button>
-          <Button
-            className="mr-2"
-            onClick={resetRaffle}
-            disabled={running}
-          >
+          <Button className="mr-2" onClick={resetRaffle} disabled={running}>
             Reset
           </Button>
-          <Link href='/home' legacyBehavior>
-          <Button
-            className=""
-          >
-            Salir
+          <Link href='/ShowParticipants/page'>
+          <Button className="mr-2">
+            Ruleta
           </Button>
+          </Link>
+          <Link href="/home" legacyBehavior>
+            <Button className="">Salir</Button>
           </Link>
         </div>
       </div>
@@ -119,11 +131,11 @@ const Raffle = () => {
         <div className="flex flex-wrap justify-center">
           {transitions((style, item) => (
             <animated.div
-              key={item}
-              style={{ ...style }}
-              className="bg-violet-100 font-semibold rounded-full ring-violet-500 ring px-2 text-center mb-4 mx-2 inline-block"
+              key={item.id}
+              style={{ ...style, borderColor: item.color }}
+              className="bg-violet-100 font-semibold rounded-full border-2 px-2 text-center mb-4 mx-2 inline-block"
             >
-              {item}
+              {item.name}
             </animated.div>
           ))}
           {winnerTransition(
@@ -131,7 +143,7 @@ const Raffle = () => {
               item && (
                 <div className="w-full text-center mt-4">
                   <animated.h3 style={{ ...style }} className="text-xl font-bold">
-                    Ganador: {item}
+                    Ganador: {item.name}
                   </animated.h3>
                 </div>
               )

@@ -1,3 +1,4 @@
+//IT IS NOT IN USE
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Button, Table } from "@rewind-ui/core";
@@ -7,15 +8,15 @@ const Wheel = dynamic(() => import("react-custom-roulette").then((mod) => mod.Wh
 const Roulette = () => {
   const [mustSpin, setMustSpin] = useState(false);
   const [participants, setParticipants] = useState([]);
-  const [prizeIndex, setPrizeIndex] = useState(0); // Changed to prizeIndex instead of prizeNumber
+  const [prizeIndex, setPrizeIndex] = useState(0); 
   const [winner, setWinner] = useState(null);
   const [titulo, setTitulo] = useState("");
+  const [excludedParticipants, setExcludedParticipants] = useState([]); // New state for excluded participants
 
   useEffect(() => {
     const formData = JSON.parse(sessionStorage.getItem("formularioSorteo"));
     if (formData) {
       setTitulo(formData.titulo || "");
-
       if (Array.isArray(formData.participantes)) {
         setParticipants(formData.participantes);
       } else if (typeof formData.participantes === "string") {
@@ -23,22 +24,35 @@ const Roulette = () => {
       } else {
         setParticipants([]);
       }
+
+      if (Array.isArray(formData.excludedParticipants)) {
+        setExcludedParticipants(formData.excludedParticipants);
+      } else if (typeof formData.excludedParticipants === "string") {
+        setExcludedParticipants(formData.excludedParticipants.split(","));
+      } else {
+        setExcludedParticipants([]);
+      }
     }
   }, []);
 
   const handleSpinClick = () => {
-    if (participants.length > 0) {
-      const randomPrizeIndex = Math.floor(Math.random() * participants.length);
-      console.log("Random Prize Index:", randomPrizeIndex);
-      setPrizeIndex(randomPrizeIndex);
+    const eligibleParticipants = participants.filter(
+      participant => !excludedParticipants.includes(participant)
+    );
+
+    if (eligibleParticipants.length > 0) {
+      const randomPrizeIndex = Math.floor(Math.random() * eligibleParticipants.length);
+      const selectedParticipant = eligibleParticipants[randomPrizeIndex];
+      const newPrizeIndex = participants.indexOf(selectedParticipant);
+      setPrizeIndex(newPrizeIndex);
       setMustSpin(true);
     } else {
-      console.warn("No participants to spin");
+      console.warn("No eligible participants to spin");
     }
   };
 
   const handleStopSpinning = () => {
-    setWinner(participants[prizeIndex]); // Set winner based on current shuffled participants array
+    setWinner(participants[prizeIndex]);
     setMustSpin(false);
   };
 
@@ -49,9 +63,8 @@ const Roulette = () => {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     setParticipants(shuffled);
-    // Find the new index of the original prize winner in the shuffled array
     const newPrizeIndex = shuffled.indexOf(participants[prizeIndex]);
-    setPrizeIndex(newPrizeIndex); // Update prizeIndex to match the new shuffled position
+    setPrizeIndex(newPrizeIndex);
   };
 
   const data = participants.map((participant, index) => ({
@@ -62,7 +75,7 @@ const Roulette = () => {
     <div className="">
       <div>
         <p>{titulo}</p>
-        <p>Number of participants: {participants.length}</p>
+        <p>Participantes: {participants.length}</p>
       </div>
       <div className="flex">
         <Button
@@ -73,7 +86,7 @@ const Roulette = () => {
           onClick={shuffleParticipants}
           className="mr-4"
         >
-          Shuffle Participants
+          Mezclar participantes
         </Button>
         <Table className="mt-2 h-96 border">
           <thead>
@@ -96,12 +109,12 @@ const Roulette = () => {
             onClick={handleSpinClick}
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4"
           >
-            Start Spinning
+            Iniciar
           </button>
           <div align="center" className="roulette-container">
             <Wheel
               mustStartSpinning={mustSpin}
-              prizeNumber={prizeIndex} // Use prizeIndex instead of prizeNumber
+              prizeNumber={prizeIndex}
               data={data}
               backgroundColors={["#4c1d95", "#8b5cf6"]}
               textColors={["#ffffff"]}
@@ -109,23 +122,27 @@ const Roulette = () => {
               innerRadius={10}
               innerBorderWidth={2}
               outerBorderWidth={2}
-              radiusLineWidth={0}
+              outerBorderColor="#a1a1aa"
+              innerBorderColor="#a1a1aa"
+              radiusLineWidth={1}
+              radiusLineColor="#a1a1aa"
               perpendicularText
               textDistance={90}
               fontSize={10}
               className="mx-auto w-full"
             />
           </div>
-          {winner !== null && (
+
+        </div>
+        <Link href='/home' >Salir</Link>
+      </div>
+      {winner !== null && (
             <div className="mt-4">
               <p className="text-xl font-bold text-center">
-                Congratulations! The winner is: {winner}
+                El ganador es: {winner}
               </p>
             </div>
           )}
-        </div>
-        <Link href='/home' >asdasd</Link>
-      </div>
     </div>
   );
 };

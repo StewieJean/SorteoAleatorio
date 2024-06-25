@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Input, Text, Table } from "@rewind-ui/core";
+import { Button, Text, Table } from "@rewind-ui/core";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 const Wheel = dynamic(
@@ -31,7 +31,9 @@ class ErrorBoundary extends React.Component {
         <div>
           <h1>¡Algo salió mal!</h1>
           <p>Por favor, actualiza la página e intenta nuevamente.</p>
-          <button onClick={() => window.location.reload()}>Actualizar Página</button>
+          <button onClick={() => window.location.reload()}>
+            Actualizar Página
+          </button>
         </div>
       );
     }
@@ -44,24 +46,39 @@ const ShowParticipants = () => {
   const [loading, setLoading] = useState(true); // Estado para controlar la carga
   const [titulo, setTitulo] = useState("");
   const [participants, setParticipants] = useState([]);
+  const [filteredParticipants, setFilteredParticipants] = useState([]);
   const [prizeIndex, setPrizeIndex] = useState(0);
   const [winner, setWinner] = useState(null);
   const [mustSpin, setMustSpin] = useState(false);
+  const [spinningButtonDisabled, setSpinningButtonDisabled] = useState(false); // Estado para deshabilitar el botón de girar
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const storedExclusionData = localStorage.getItem(
+          "FormularioExcludedSorteo"
+        );
+        const exclusionList = storedExclusionData
+          ? JSON.parse(storedExclusionData).excludedParticipants
+          : [];
+
         const formData = JSON.parse(sessionStorage.getItem("formularioSorteo"));
         if (formData) {
           setTitulo(formData.titulo || "");
 
+          let allParticipants = [];
           if (Array.isArray(formData.participantes)) {
-            setParticipants(formData.participantes);
+            allParticipants = formData.participantes;
           } else if (typeof formData.participantes === "string") {
-            setParticipants(formData.participantes.split(","));
-          } else {
-            setParticipants([]);
+            allParticipants = formData.participantes.split(",");
           }
+
+          setParticipants(allParticipants);
+          // Filtra los participantes para excluir los de la lista
+          const filtered = allParticipants.filter(
+            (participant) => !exclusionList.includes(participant)
+          );
+          setFilteredParticipants(filtered);
         }
       } catch (error) {
         console.error("Error al cargar datos:", error);
@@ -86,10 +103,15 @@ const ShowParticipants = () => {
   };
 
   const handleSpinClick = () => {
-    if (participants.length > 0) {
-      const randomPrizeIndex = Math.floor(Math.random() * participants.length);
-      setPrizeIndex(randomPrizeIndex);
+    if (filteredParticipants.length > 0) {
+      const randomPrizeIndex = Math.floor(
+        Math.random() * filteredParticipants.length
+      );
+      const winnerParticipant = filteredParticipants[randomPrizeIndex];
+      const winnerIndex = participants.indexOf(winnerParticipant);
+      setPrizeIndex(winnerIndex);
       setMustSpin(true);
+      setSpinningButtonDisabled(true); // Deshabilitar el botón al iniciar el giro
     } else {
       console.warn("No participants to spin");
     }
@@ -98,13 +120,12 @@ const ShowParticipants = () => {
   const handleStopSpinning = () => {
     setWinner(participants[prizeIndex]);
     setMustSpin(false);
+    setSpinningButtonDisabled(false); // Habilitar el botón al detener el giro
   };
 
   const data = participants.map((participant, index) => ({
     option: (index + 1).toString(),
   }));
-
-
 
   if (loading) {
     return <div>Cargando...</div>; // Puedes personalizar este mensaje de carga
@@ -181,6 +202,7 @@ const ShowParticipants = () => {
             shadow="md"
             shadowColor="dark"
             onClick={handleSpinClick}
+            disabled={spinningButtonDisabled} // Aquí se usa el estado para deshabilitar el botón
           >
             Girar la ruleta
           </Button>
@@ -216,23 +238,23 @@ const ShowParticipants = () => {
               className="mx-auto w-full"
             />
           </div>
-          {winner !== null && (
-            <div className="mt-4">
-              <p className="text-xl font-bold text-center">
-                ¡Felicidades! El ganador es: {winner}
-              </p>
-            </div>
-          )}
         </div>
-        <Link href='/SortearParticipants/page'>sdasdasd</Link>
+        {winner !== null && (
+          <div className="relative b-0 l-0 r-0">
+            <p className="text-xl font-bold text-center">
+              ¡Felicidades! El ganador es: {winner}
+            </p>
+          </div>
+        )}
       </div>
-
     </div>
   );
 };
 
-export default () => (
+const App = () => (
   <ErrorBoundary>
     <ShowParticipants />
   </ErrorBoundary>
 );
+
+export default App;

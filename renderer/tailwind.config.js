@@ -10,6 +10,7 @@ module.exports = {
     './node_modules/@rewind-ui/core/dist/theme/styles/Button.styles.js',
     './node_modules/@rewind-ui/core/dist/theme/styles/Text.styles.js'
   ],
+  darkMode: "class",
   theme: {
     extend: {
       sans: ["Century Gothic", "sans-serif"],
