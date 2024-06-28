@@ -1,3 +1,4 @@
+/*
 import React, { useState, useEffect } from "react";
 import { useTransition, animated } from "react-spring";
 import { Button } from "@rewind-ui/core";
@@ -154,4 +155,4 @@ const Raffle = () => {
   );
 };
 
-export default Raffle;
+export default Raffle;*/

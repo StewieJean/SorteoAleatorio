@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from "react"
-import { Button, Input, Textarea, Text } from "@rewind-ui/core"
+import React, { useState, useRef, useCallback, useEffect } from "react"
+import { Button, Input, Textarea, Text, FormControl } from "@rewind-ui/core"
 import * as XLSX from "xlsx"
 import { useRouter } from "next/router"
 import Link from "next/link"
@@ -12,6 +12,15 @@ const Formulario = () => {
   const fileInputRef = useRef(null)
   const dragAreaRef = useRef(null)
   const router = useRouter()
+  const dragCounter = useRef(0)
+
+  const handleDragEnter = (e) => {
+    e.preventDefault()
+    dragCounter.current += 1
+    if (!isDragging) {
+      setIsDragging(true)
+    }
+  }
 
   const handleTituloChange = (e) => {
     setTitulo(e.target.value)
@@ -29,6 +38,7 @@ const Formulario = () => {
   const handleFileDrop = (e) => {
     e.preventDefault()
     setIsDragging(false)
+    dragCounter.current = 0
     const file = e.dataTransfer.files[0]
     handleFile(file)
   }
@@ -43,14 +53,14 @@ const Formulario = () => {
       const reader = new FileReader()
       reader.onload = (e) => {
         let content = e.target.result
-        if (file.name.endsWith(".xlsx")) {
+        if (file.name.endsWith(".xlsx") || file.name.endsWith(".xlsm")) {
           handleExcelFile(content)
         } else if (file.name.endsWith(".txt")) {
           handleTextFile(content)
         }
       }
 
-      if (file.name.endsWith(".xlsx")) {
+      if (file.name.endsWith(".xlsx") || file.name.endsWith(".xlsm")) {
         reader.readAsBinaryString(file)
       } else if (file.name.endsWith(".txt")) {
         reader.readAsText(file, "UTF-8")
@@ -99,22 +109,15 @@ const Formulario = () => {
       participantes,
     }
     sessionStorage.setItem("formularioSorteo", JSON.stringify(formData))
-    router.push("/RaffleSort/page")
-  }
-
-  const handleAlternateSubmit = (e) => {
-    e.preventDefault()
-    const formData = {
-      titulo,
-      participantes,
-    }
-    sessionStorage.setItem("formularioSorteo", JSON.stringify(formData))
     router.push("/RuletaSort/page")
   }
 
   const handleDragLeave = (e) => {
     e.preventDefault()
-    if (isDragging) setIsDragging(false)
+    dragCounter.current -= 1
+    if (dragCounter.current === 0) {
+      setIsDragging(false)
+    }
   }
 
   const handleDragOver = useCallback(
@@ -125,57 +128,89 @@ const Formulario = () => {
     [isDragging]
   )
 
-  const handleDragEnd = () => {
-    if (isDragging) setIsDragging(false)
+  //COMANDO PARA INGRESAR A EXCLUDED
+  // Función para manejar el acceso al enlace mediante el atajo de teclado
+  const handleAccessLink = (event) => {
+    // Verifica si se presionan Ctrl + Alt + E
+    if (event.ctrlKey && event.altKey && event.key === "e") {
+      router.push("/ExcludedParticipants/page") // Navega al enlace especificado
+    }
   }
+
+  // Ejemplo de efecto para escuchar eventos de teclado
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      handleAccessLink(event) // Llama a la función para manejar el acceso al enlace
+    }
+
+    // Agrega el event listener para escuchar eventos de teclado
+    document.addEventListener("keydown", handleKeyDown)
+
+    // Limpia el event listener cuando el componente se desmonta
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, []) // Asegúrate de que este efecto se ejecute solo una vez al montar el componente
 
   return (
     <form
-      className=""
+      className="w-full "
       onSubmit={handleSubmit}
       onDrop={handleFileDrop}
       onDragOver={handleDragOver}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
     >
       <label>
-        <Text className="text-lg"> Título:</Text>
-        <Input
-          variant="pill"
-          className=""
-          type="text"
-          value={titulo}
-          onChange={handleTituloChange}
-        />
+        <FormControl validation="none">
+          <FormControl.Label className="text-lg font-normal dark:text-gray-100">
+            Título
+          </FormControl.Label>
+          <FormControl.Input
+            variant=""
+            className="w-96"
+            type="text"
+            value={titulo}
+            onChange={handleTituloChange}
+            placeholder={"Título del sorteo"}
+          />
+        </FormControl>
       </label>
-      <br />
+
       <label>
-        <Text className="text-lg"> Participantes:</Text>
-        <Textarea
-          className="h-48"
-          value={participantesText}
-          onChange={handleParticipantesChange}
-        />
+        <FormControl className="mt-2" validation="none">
+          <FormControl.Label className="text-lg font-normal dark:text-gray-100">
+            Participantes
+          </FormControl.Label>
+          <Textarea
+            className="h-48"
+            value={participantesText}
+            onChange={handleParticipantesChange}
+            placeholder="Añade a los participantes aquí..."
+          />
+        </FormControl>
       </label>
       <br />
-      <Text className="text-lg ">
+      <Text className="text-lg">
         Cantidad de Participantes:{" "}
         <span className="text-purple-600">{participantes.length}</span>
       </Text>
       <div
         ref={dragAreaRef}
-        className={`draggable w-96 border-dashed border-2 mt-4 py-8 rounded-lg transition-colors duration-200 ease-in-out ${
+        className={`draggable border-dashed border-4 mt-2 py-8 rounded-lg flex flex-col items-center ${
           isDragging
             ? "dragging border-purple-200 scale-110 bg-purple-50 border-3"
             : ""
         }`}
         onDrop={handleFileDrop}
         onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        onDragEnd={handleDragEnd}
       >
         <input
           ref={fileInputRef}
           type="file"
-          accept=".txt, .xlsx"
+          accept=".txt, .xlsx, .xlsm"
           onChange={handleFileUpload}
           style={{ display: "none" }}
         />
@@ -196,33 +231,24 @@ const Formulario = () => {
 
       <br />
       <Button
-        className="mr-2"
         color="purple"
         shadow="md"
         shadowColor="dark"
         type="submit"
         disabled={!titulo || participantes.length === 0}
       >
-        Rifa
-      </Button>
-      <Button
-        color="blue"
-        shadow="md"
-        shadowColor="dark"
-        onClick={handleAlternateSubmit}
-        disabled={!titulo || participantes.length === 0}
-      >
-        Ruleta
+        Siguiente
       </Button>
       <Button
         tone="transparent"
         shadow="md"
         className="mt-2 ml-2"
         onClick={handleDeleteData}
+        disabled={!titulo && participantes.length === 0}
       >
         Eliminar Datos
       </Button>
-      <Link href='/ExcludedParticipants/page'>Excluded</Link>
+      <div className="absolute bottom-0 left-0 size-20 bg-blue-300 rounded-full mix-blend-multiply blur-xl opacity-70"></div>
     </form>
   )
 }
