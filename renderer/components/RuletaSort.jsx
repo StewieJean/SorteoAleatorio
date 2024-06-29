@@ -48,13 +48,12 @@ const ShowParticipants = () => {
   const [participants, setParticipants] = useState([])
   const [filteredParticipants, setFilteredParticipants] = useState([])
   const [prizeIndex, setPrizeIndex] = useState(0)
-  const [winner, setWinner] = useState(null)
   const [mustSpin, setMustSpin] = useState(false)
   const [spinningButtonDisabled, setSpinningButtonDisabled] = useState(false)
   const [alertVisible, setAlertVisible] = useState(false)
-  const [originalParticipants, setOriginalParticipants] = useState([])
   const [numberOfWinners, setNumberOfWinners] = useState(1) // Número de ganadores seleccionados
   const [winners, setWinners] = useState([]) // Lista de ganadores
+  const [predefinedWinners, setPredefinedWinners] = useState([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -78,11 +77,19 @@ const ShowParticipants = () => {
           }
 
           setParticipants(allParticipants)
-          setOriginalParticipants(allParticipants)
           const filtered = allParticipants.filter(
             (participant) => !exclusionList.includes(participant)
           )
           setFilteredParticipants(filtered)
+        }
+
+        // Obtener predefinedWinners del localStorage
+        const storedWinners = localStorage.getItem(
+          "FormularioPredefinedWinners"
+        )
+        if (storedWinners) {
+          const { predefinedWinners } = JSON.parse(storedWinners)
+          setPredefinedWinners(predefinedWinners || [])
         }
       } catch (error) {
         console.error("Error al cargar datos:", error)
@@ -107,16 +114,25 @@ const ShowParticipants = () => {
 
   const handleSpinClick = () => {
     if (filteredParticipants.length > 0) {
-      const randomPrizeIndex = Math.floor(
-        Math.random() * filteredParticipants.length
-      )
-      const winnerParticipant = filteredParticipants[randomPrizeIndex]
-      const winnerIndex = participants.indexOf(winnerParticipant)
-      setPrizeIndex(winnerIndex)
-      setMustSpin(true)
-      setSpinningButtonDisabled(true)
+      let nextWinner
+
+      if (predefinedWinners.length > winners.length) {
+        // Obtener el próximo ganador predefinido si quedan disponibles
+        nextWinner = predefinedWinners[winners.length]
+      } else {
+        // Si no hay más ganadores predefinidos, seleccionar aleatoriamente
+        nextWinner =
+          filteredParticipants[
+            Math.floor(Math.random() * filteredParticipants.length)
+          ]
+      }
+
+      const winnerIndex = participants.indexOf(nextWinner)
+      setPrizeIndex(winnerIndex) // Establecer el índice del ganador en la ruleta
+      setMustSpin(true) // Activar el giro de la ruleta
+      setSpinningButtonDisabled(true) // Deshabilitar el botón de girar
     } else {
-      console.warn("No participants to spin")
+      console.warn("No hay participantes para girar")
     }
   }
 
@@ -138,10 +154,7 @@ const ShowParticipants = () => {
   }
 
   const handleRestart = () => {
-    setWinner(null)
-    setParticipants(originalParticipants)
-    setFilteredParticipants(originalParticipants)
-    setWinners([])
+    window.location.reload()
   }
 
   const handleNumberOfWinnersChange = (event) => {
@@ -262,8 +275,7 @@ const ShowParticipants = () => {
                 mustStartSpinning={mustSpin}
                 prizeNumber={prizeIndex}
                 data={data}
-                backgroundColors={["#4c1d95", "#8b5cf6", "#2e1065", "#8b5cf6"]}
-                textColors={["#ffffff"]}
+                backgroundColors={["#7ceaeb", "#faf174", "#7484fb", "#fb7b7b"]}
                 onStopSpinning={handleStopSpinning}
                 innerRadius={10}
                 innerBorderColor="#ede9fe"
@@ -280,7 +292,7 @@ const ShowParticipants = () => {
           </div>
           {alertVisible && (
             <>
-              <div className="absolute inset-x-1 top-0">
+              <div className="absolute top-0 left-0">
                 <Confetti
                   width={window.innerWidth - 30}
                   height={window.innerHeight - 20}
@@ -293,7 +305,7 @@ const ShowParticipants = () => {
                     color="yellow"
                     size="lg"
                     shadow="md"
-                    className="border"
+                    className="tada-animation animate__animated animate__tada border"
                   >
                     <div className="grid gap-y-3 justify-items-center text-yellow-400 w-full">
                       <Text size="2xl" className="text-center text-yellow-600">
@@ -304,12 +316,11 @@ const ShowParticipants = () => {
                           key={index}
                           variant="h2"
                           weight="medium"
-                          className="tada-animation animate__animated animate__tada text-yellow-600"
+                          className=" text-yellow-600"
                         >
                           {`0${index + 1}: ${winner}`}
                         </Text>
                       ))}
-
                       <div className="border border-b-2 border-dashed border-yellow-200 w-full" />
                       <Text size="md" className="text-center text-yellow-600">
                         Muchas gracias a todos por participar.

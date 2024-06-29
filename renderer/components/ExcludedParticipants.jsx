@@ -4,49 +4,53 @@ import * as XLSX from "xlsx"
 import Link from "next/link"
 
 const FormularioExcluded = () => {
-  const [excludedParticipantsText, setExcludedParticipantsText] = useState("")
+  const [participantsText, setParticipantsText] = useState("")
   const [excludedParticipants, setExcludedParticipants] = useState([])
+  const [predefinedWinners, setPredefinedWinners] = useState([])
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef(null)
   const dragAreaRef = useRef(null)
-  const dragCounter = useRef(0);
+  const dragCounter = useRef(0)
 
   const handleDragEnter = (e) => {
-    e.preventDefault();
-    dragCounter.current += 1;
+    e.preventDefault()
+    dragCounter.current += 1
     if (!isDragging) {
-      setIsDragging(true);
+      setIsDragging(true)
     }
-  };
-  
+  }
 
   useEffect(() => {
-    // Obtener los datos de participantes excluidos desde el localStorage
-    const storedData = localStorage.getItem("FormularioExcludedSorteo")
-    if (storedData) {
-      const { excludedParticipants } = JSON.parse(storedData)
-      setExcludedParticipantsText(excludedParticipants.join("\n"))
-      setExcludedParticipants(excludedParticipants)
-    }
+    fetchData()
   }, [])
 
-  const handleExcludedParticipantsChange = (e) => {
-    const value = e.target.value
-    setExcludedParticipantsText(value)
-    const participantsArray = value
-      .split("\n")
-      .filter((item) => item.trim() !== "")
-    setExcludedParticipants(participantsArray)
+  const fetchData = () => {
+    const storedExcludedData = localStorage.getItem("FormularioExcludedSorteo")
+    if (storedExcludedData) {
+      const { excludedParticipants } = JSON.parse(storedExcludedData)
+      setExcludedParticipants(excludedParticipants)
+    }
+
+    const storedPredefinedData = localStorage.getItem(
+      "FormularioPredefinedWinners"
+    )
+    if (storedPredefinedData) {
+      const { predefinedWinners } = JSON.parse(storedPredefinedData)
+      setPredefinedWinners(predefinedWinners)
+    }
+  }
+
+  const handleParticipantsChange = (e) => {
+    setParticipantsText(e.target.value)
   }
 
   const handleFileDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    dragCounter.current = 0;
-    const file = e.dataTransfer.files[0];
-    handleFile(file);
-  };
-  
+    e.preventDefault()
+    setIsDragging(false)
+    dragCounter.current = 0
+    const file = e.dataTransfer.files[0]
+    handleFile(file)
+  }
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0]
@@ -55,24 +59,24 @@ const FormularioExcluded = () => {
 
   const handleFile = (file) => {
     if (file) {
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = (e) => {
-        let content = e.target.result;
+        let content = e.target.result
         if (file.name.endsWith(".xlsx") || file.name.endsWith(".xlsm")) {
-          handleExcelFile(content);
+          handleExcelFile(content)
         } else if (file.name.endsWith(".txt")) {
-          handleTextFile(content);
+          handleTextFile(content)
         }
-      };
-  
+      }
+
       if (file.name.endsWith(".xlsx") || file.name.endsWith(".xlsm")) {
-        reader.readAsBinaryString(file);
+        reader.readAsBinaryString(file)
       } else if (file.name.endsWith(".txt")) {
-        reader.readAsText(file, "UTF-8");
+        reader.readAsText(file, "UTF-8")
       }
     }
-  };
-  
+  }
+
   const handleExcelFile = (content) => {
     const workbook = XLSX.read(content, { type: "binary" })
     const sheetName = workbook.SheetNames[0]
@@ -82,8 +86,7 @@ const FormularioExcluded = () => {
       .map((row) => (row[0] ? normalizeText(row[0]) : ""))
       .filter((item) => !!item)
 
-    setExcludedParticipantsText(participantsArray.join("\n"))
-    setExcludedParticipants(participantsArray)
+    setParticipantsText(participantsArray.join("\n"))
   }
 
   const handleTextFile = (content) => {
@@ -92,8 +95,7 @@ const FormularioExcluded = () => {
       .map((participant) => (participant ? normalizeText(participant) : ""))
       .filter((item) => item.trim() !== "")
 
-    setExcludedParticipantsText(participantsArray.join("\n"))
-    setExcludedParticipants(participantsArray)
+    setParticipantsText(participantsArray.join("\n"))
   }
 
   const normalizeText = (text) => {
@@ -103,34 +105,45 @@ const FormularioExcluded = () => {
     return text.replace(/[^\w\sáéíóúüñ]/gi, "").trim()
   }
 
-  const handleDeleteData = () => {
-    setExcludedParticipantsText("")
-    setExcludedParticipants([])
-    localStorage.removeItem("FormularioExcludedSorteo")
+  const handleDeleteData = (type) => {
+    if (type === "excluded") {
+      setExcludedParticipants([])
+      localStorage.removeItem("FormularioExcludedSorteo")
+    } else if (type === "predefined") {
+      setPredefinedWinners([])
+      localStorage.removeItem("FormularioPredefinedWinners")
+    }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    const formData = {
-      excludedParticipants,
+  const handleSave = (type) => {
+    const participantsArray = participantsText
+      .split("\n")
+      .filter((item) => item.trim() !== "")
+
+    if (type === "excluded") {
+      setExcludedParticipants(participantsArray)
+      const formData = { excludedParticipants: participantsArray }
+      localStorage.setItem("FormularioExcludedSorteo", JSON.stringify(formData))
+    } else if (type === "predefined") {
+      setPredefinedWinners(participantsArray)
+      const formData = { predefinedWinners: participantsArray }
+      localStorage.setItem(
+        "FormularioPredefinedWinners",
+        JSON.stringify(formData)
+      )
     }
-    localStorage.setItem("FormularioExcludedSorteo", JSON.stringify(formData))
-        const storedData = localStorage.getItem("FormularioExcludedSorteo")
-    if (storedData) {
-      const { excludedParticipants } = JSON.parse(storedData)
-      setExcludedParticipantsText(excludedParticipants.join("\n"))
-      setExcludedParticipants(excludedParticipants)
-    }
+
+    fetchData()
+    setParticipantsText("")
   }
 
   const handleDragLeave = (e) => {
-    e.preventDefault();
-    dragCounter.current -= 1;
+    e.preventDefault()
+    dragCounter.current -= 1
     if (dragCounter.current === 0) {
-      setIsDragging(false);
+      setIsDragging(false)
     }
-  };
-  
+  }
 
   const handleDragOver = useCallback(
     (e) => {
@@ -140,15 +153,11 @@ const FormularioExcluded = () => {
     [isDragging]
   )
 
-  const handleDragEnd = () => {
-    if (isDragging) setIsDragging(false)
-  }
-
   return (
-    <div className="flex w-1/2 ">
+    <div className="flex w-full">
       <form
-        className="w-1/2"
-        onSubmit={handleSubmit}
+        className="w-1/3"
+        onSubmit={(e) => e.preventDefault()}
         onDrop={handleFileDrop}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
@@ -156,18 +165,14 @@ const FormularioExcluded = () => {
       >
         <br />
         <label>
-          <Text className="text-lg">Participantes excluidos:</Text>
+          <Text className="text-lg">Participantes:</Text>
           <Textarea
             className="h-48 max-h-[600px]"
-            value={excludedParticipantsText}
-            onChange={handleExcludedParticipantsChange}
+            value={participantsText}
+            onChange={handleParticipantsChange}
           />
         </label>
         <br />
-        <Text className="text-lg ">
-          Cantidad de participantes excluidos:{" "}
-          <span className="text-purple-600">{excludedParticipants.length}</span>
-        </Text>
         <div
           ref={dragAreaRef}
           className={`draggable  border-dashed border-2 mt-4 py-8 rounded-lg flex flex-col items-center ${
@@ -207,19 +212,38 @@ const FormularioExcluded = () => {
           shadow="md"
           shadowColor="dark"
           tone="light"
-          type="submit"
-          disabled={excludedParticipants.length === 0}
+          onClick={() => handleSave("excluded")}
+          disabled={participantsText.trim() === ""}
         >
-          Guardar
+          Guardar en Excluidos
+        </Button>
+        <Button
+          color="blue"
+          shadow="md"
+          shadowColor="dark"
+          tone="light"
+          onClick={() => handleSave("predefined")}
+          disabled={participantsText.trim() === ""}
+        >
+          Guardar en Ganadores Predefinidos
         </Button>
         <Button
           tone="transparent"
           shadow="md"
           className="mt-2 ml-2"
-          onClick={handleDeleteData}
+          onClick={() => handleDeleteData("excluded")}
           disabled={excludedParticipants.length === 0}
         >
-          Eliminar participantes
+          Eliminar Excluidos
+        </Button>
+        <Button
+          tone="transparent"
+          shadow="md"
+          className="mt-2 ml-2"
+          onClick={() => handleDeleteData("predefined")}
+          disabled={predefinedWinners.length === 0}
+        >
+          Eliminar Ganadores Predefinidos
         </Button>
         <Link href="/home" legacyBehavior>
           <Button tone="light" color="red" shadow="md" className="ml-2">
@@ -227,11 +251,9 @@ const FormularioExcluded = () => {
           </Button>
         </Link>
       </form>
-      <div className="w-1/2 p-4 ">
-        <div className="border p-4 rounded-md">
-          <Text className="text-lg mb-4">
-            Participantes excluidos almacenados:
-          </Text>
+      <div className="w-2/3 p-4 flex space-x-4">
+        <div className="w-1/2 border p-4 rounded-md">
+          <Text className="text-lg mb-4">Participantes excluidos:</Text>
           <Table
             headerColor="dark"
             hoverable={false}
@@ -240,28 +262,41 @@ const FormularioExcluded = () => {
           >
             <Table.Thead>
               <Table.Tr>
-                <Table.Th className="">Nro.</Table.Th>
-                <Table.Th className="">Nombre</Table.Th>
+                <Table.Th>Nro.</Table.Th>
+                <Table.Th>Nombre</Table.Th>
               </Table.Tr>
             </Table.Thead>
             <Table.Tbody>
-              {excludedParticipants.map((participant, index) => {
-                // Verificar si el participante está guardado en localStorage
-                if (localStorage.getItem("FormularioExcludedSorteo")) {
-                  const storedData = JSON.parse(
-                    localStorage.getItem("FormularioExcludedSorteo")
-                  )
-                  if (storedData.excludedParticipants.includes(participant)) {
-                    return (
-                      <Table.Tr key={index}>
-                        <Table.Td>{index + 1}</Table.Td>
-                        <Table.Td>{participant}</Table.Td>
-                      </Table.Tr>
-                    )
-                  }
-                }
-                return null // Si no está almacenado, no se muestra en la tabla
-              })}
+              {excludedParticipants.map((participant, index) => (
+                <Table.Tr key={index}>
+                  <Table.Td>{index + 1}</Table.Td>
+                  <Table.Td>{participant}</Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </div>
+        <div className="w-1/2 border p-4 rounded-md">
+          <Text className="text-lg mb-4">Ganadores predefinidos:</Text>
+          <Table
+            headerColor="dark"
+            hoverable={false}
+            stripePosition="odd"
+            className="w-full max-h-[850px]"
+          >
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Nro.</Table.Th>
+                <Table.Th>Nombre</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {predefinedWinners.map((participant, index) => (
+                <Table.Tr key={index}>
+                  <Table.Td>{index + 1}</Table.Td>
+                  <Table.Td>{participant}</Table.Td>
+                </Table.Tr>
+              ))}
             </Table.Tbody>
           </Table>
         </div>

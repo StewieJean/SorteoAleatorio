@@ -29,13 +29,16 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div>
-          <h1>¡Algo salió mal!</h1>
-          <p>Por favor, actualiza la página e intenta nuevamente.</p>
-          <button onClick={() => window.location.reload()}>
-            Actualizar Página
-          </button>
-        </div>
+        <section className=" dark:bg-gray-900">
+          <div className="mx-auto max-w-screen-xl px-4 py-8 lg:px-6 lg:py-16">
+            <div className="mx-auto max-w-screen-sm text-center">
+              <h1 className="dark:text-primary-500 mb-4 text-7xl font-extrabold tracking-tight text-violet-600 lg:text-9xl">500</h1>
+              <p className="mb-4 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">Internal Server Error.</p>
+              <p className="mb-4 text-lg font-light text-gray-500 dark:text-gray-400">Sorry something went wrong.</p>
+              <button className="mb-4 text-lg font-light text-gray-500 bg-violet-100 rounded-lg p-2" onClick={() => window.location.reload()}>Reload</button>
+            </div>
+          </div>
+        </section>
       )
     }
 
