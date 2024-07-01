@@ -1,8 +1,8 @@
 import React, { useState, useRef, useCallback, useEffect } from "react"
-import { Button, Input, Textarea, Text, FormControl } from "@rewind-ui/core"
+import { Button, Textarea, Text, FormControl } from "@rewind-ui/core"
 import * as XLSX from "xlsx"
 import { useRouter } from "next/router"
-import Link from "next/link"
+
 
 const Formulario = () => {
   const [titulo, setTitulo] = useState("")
@@ -132,7 +132,7 @@ const Formulario = () => {
   // Función para manejar el acceso al enlace mediante el atajo de teclado
   const handleAccessLink = (event) => {
     // Verifica si se presionan Ctrl + Alt + E
-    if (event.ctrlKey && event.altKey && event.key === "e") {
+    if (event.ctrlKey && event.altKey && event.key === "e" || event.ctrlKey && event.altKey && event.key === "E") {
       router.push("/ExcludedParticipants/page") // Navega al enlace especificado
     }
   }

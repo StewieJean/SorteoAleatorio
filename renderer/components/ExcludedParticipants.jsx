@@ -154,9 +154,9 @@ const FormularioExcluded = () => {
   )
 
   return (
-    <div className="flex w-full">
+    <div className="flex w-full items-center justify-center max-h-[600px]">
       <form
-        className="w-1/3"
+        className=""
         onSubmit={(e) => e.preventDefault()}
         onDrop={handleFileDrop}
         onDragOver={handleDragOver}
@@ -167,7 +167,7 @@ const FormularioExcluded = () => {
         <label>
           <Text className="text-lg">Participantes:</Text>
           <Textarea
-            className="h-48 max-h-[600px]"
+            className="h-48 min-h-96"
             value={participantsText}
             onChange={handleParticipantsChange}
           />
@@ -207,98 +207,109 @@ const FormularioExcluded = () => {
           </p>
         </div>
         <br />
-        <Button
-          color="purple"
-          shadow="md"
-          shadowColor="dark"
-          tone="light"
-          onClick={() => handleSave("excluded")}
-          disabled={participantsText.trim() === ""}
-        >
-          Guardar en Excluidos
-        </Button>
-        <Button
-          color="blue"
-          shadow="md"
-          shadowColor="dark"
-          tone="light"
-          onClick={() => handleSave("predefined")}
-          disabled={participantsText.trim() === ""}
-        >
-          Guardar en Ganadores Predefinidos
-        </Button>
-        <Button
-          tone="transparent"
-          shadow="md"
-          className="mt-2 ml-2"
-          onClick={() => handleDeleteData("excluded")}
-          disabled={excludedParticipants.length === 0}
-        >
-          Eliminar Excluidos
-        </Button>
-        <Button
-          tone="transparent"
-          shadow="md"
-          className="mt-2 ml-2"
-          onClick={() => handleDeleteData("predefined")}
-          disabled={predefinedWinners.length === 0}
-        >
-          Eliminar Ganadores Predefinidos
-        </Button>
+
         <Link href="/home" legacyBehavior>
           <Button tone="light" color="red" shadow="md" className="ml-2">
             Atrás
           </Button>
         </Link>
       </form>
-      <div className="w-2/3 p-4 flex space-x-4">
-        <div className="w-1/2 border p-4 rounded-md">
-          <Text className="text-lg mb-4">Participantes excluidos:</Text>
-          <Table
-            headerColor="dark"
-            hoverable={false}
-            stripePosition="odd"
-            className="w-full max-h-[850px]"
-          >
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Nro.</Table.Th>
-                <Table.Th>Nombre</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {excludedParticipants.map((participant, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td>{index + 1}</Table.Td>
-                  <Table.Td>{participant}</Table.Td>
+      <div className=" p-4 flex space-x-4">
+        <div>
+          <div className="flex justify-center">
+            <Button
+              color="purple"
+              shadow="md"
+              shadowColor="dark"
+              tone="light"
+              onClick={() => handleSave("excluded")}
+              disabled={participantsText.trim() === ""}
+            >
+              Guardar en Excluidos
+            </Button>
+            <Button
+              tone="light"
+              shadow="md"
+              className=" ml-2"
+              onClick={() => handleDeleteData("excluded")}
+              disabled={excludedParticipants.length === 0}
+            >
+              Eliminar Excluidos
+            </Button>
+          </div>
+          <div className=" border p-2 mt-3 rounded-md">
+            <Text weight="semiBold" className="text-lg">Participantes excluidos: (Se muestran pero no participan)</Text>
+            <Table
+              headerColor="dark"
+              hoverable={false}
+              stripePosition="odd"
+              className="w-full max-h-[850px]"
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Nro.</Table.Th>
+                  <Table.Th>Nombre</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {excludedParticipants.map((participant, index) => (
+                  <Table.Tr key={index}>
+                    <Table.Td>{index + 1}</Table.Td>
+                    <Table.Td>{participant}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </div>
         </div>
-        <div className="w-1/2 border p-4 rounded-md">
-          <Text className="text-lg mb-4">Ganadores predefinidos:</Text>
-          <Table
-            headerColor="dark"
-            hoverable={false}
-            stripePosition="odd"
-            className="w-full max-h-[850px]"
-          >
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Nro.</Table.Th>
-                <Table.Th>Nombre</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {predefinedWinners.map((participant, index) => (
-                <Table.Tr key={index}>
-                  <Table.Td>{index + 1}</Table.Td>
-                  <Table.Td>{participant}</Table.Td>
+        <div className="">
+          <div className="flex justify-center">
+            <Button
+              color="blue"
+              shadow="md"
+              shadowColor="dark"
+              tone="light"
+              onClick={() => handleSave("predefined")}
+              disabled={participantsText.trim() === ""}
+            >
+              Guardar en Ganadores Predefinidos
+            </Button>
+
+            <Button
+              tone="light"
+              shadow="md"
+              className=" ml-2"
+              onClick={() => handleDeleteData("predefined")}
+              disabled={predefinedWinners.length === 0}
+            >
+              Eliminar Ganadores Predefinidos
+            </Button>
+          </div>
+
+          <div className="border p-2 mt-3 rounded-md ">
+            <Text weight="semiBold" className="text-lg mb-4">Ganadores predefinidos: (Ganan según el orden de la lista)</Text>
+            <Table
+              headerColor="dark"
+              hoverable={false}
+              stripePosition="odd"
+              className="w-full max-h-[850px]"
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Nro.</Table.Th>
+                  <Table.Th>Nombre</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
+              </Table.Thead>
+              <Table.Tbody>
+                {predefinedWinners.map((participant, index) => (
+                  <Table.Tr key={index}>
+                    <Table.Td>{index + 1}</Table.Td>
+                    <Table.Td>{participant}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </div>
         </div>
       </div>
     </div>
