@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react"
-import { Button, Text, Table, Alert, Select } from "@rewind-ui/core"
+import { Button, Text, Table, Alert } from "@rewind-ui/core"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import Confetti from "react-confetti"
+import { useRouter } from "next/router"
 import "animate.css"
 
 const Wheel = dynamic(
@@ -31,10 +32,21 @@ class ErrorBoundary extends React.Component {
         <section className=" dark:bg-gray-900">
           <div className="mx-auto max-w-screen-xl px-4 py-8 lg:px-6 lg:py-16">
             <div className="mx-auto max-w-screen-sm text-center">
-              <h1 className="dark:text-primary-500 mb-4 text-7xl font-extrabold tracking-tight text-violet-600 lg:text-9xl">500</h1>
-              <p className="mb-4 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">Internal Server Error.</p>
-              <p className="mb-4 text-lg font-light text-gray-500 dark:text-gray-400">Sorry something went wrong.</p>
-              <button className="mb-4 text-lg font-light text-gray-500 bg-violet-100 rounded-lg p-2" onClick={() => window.location.reload()}>Reload</button>
+              <h1 className="dark:text-primary-500 mb-4 text-7xl font-extrabold tracking-tight text-violet-600 lg:text-9xl">
+                500
+              </h1>
+              <p className="mb-4 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
+                Internal Server Error.
+              </p>
+              <p className="mb-4 text-lg font-light text-gray-500 dark:text-gray-400">
+                Sorry something went wrong.
+              </p>
+              <button
+                className="mb-4 text-lg font-light text-gray-500 bg-violet-100 rounded-lg p-2"
+                onClick={() => window.location.reload()}
+              >
+                Reload
+              </button>
             </div>
           </div>
         </section>
@@ -57,6 +69,8 @@ const ShowParticipants = () => {
   const [numberOfWinners, setNumberOfWinners] = useState(1) // Número de ganadores seleccionados
   const [winners, setWinners] = useState([]) // Lista de ganadores
   const [predefinedWinners, setPredefinedWinners] = useState([])
+
+  const router = useRouter()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -153,24 +167,24 @@ const ShowParticipants = () => {
   }
 
   const handleStopSpinning = () => {
-    const winnerParticipant = participants[prizeIndex]
-    setWinners((prevWinners) => [...prevWinners, winnerParticipant])
+    const winnerParticipant = participants[prizeIndex];
+    setWinners((prevWinners) => [...prevWinners, winnerParticipant]);
     setFilteredParticipants((prevParticipants) =>
       prevParticipants.filter((p) => p !== winnerParticipant)
-    )
-    setMustSpin(false)
-    setSpinningButtonDisabled(false)
+    );
+    setMustSpin(false);
+    setSpinningButtonDisabled(false);
     if (winners.length + 1 >= numberOfWinners) {
-      setAlertVisible(true)
+      setAlertVisible(true);
     }
-  }
-
+  };
+  
   const handleCloseAlert = () => {
     setAlertVisible(false)
   }
 
   const handleRestart = () => {
-    window.location.reload()
+    router.push("/DummyPage/page")
   }
 
   const handleNumberOfWinnersChange = (event) => {
@@ -207,15 +221,31 @@ const ShowParticipants = () => {
     distanceRadius = 92
   }
 
+  const getOrdinal = (n) => {
+    const ordinals = [
+      "1ro",
+      "2do",
+      "3ro",
+      "4to",
+      "5to",
+      "6to",
+      "7mo",
+      "8vo",
+      "9no",
+      "10mo",
+      "11vo",
+      "12vo",
+    ]
+    return ordinals[n - 1] || `${n}vo`
+  }
+
   return (
     <>
-      <div className="absolute top-0 mt-4">
-        <Text weight="bold" size="6xl">
-          {titulo}
-        </Text>
+      <div className="absolute top-0 mt-6">
+        <h1 className="text-6xl text-blue-400 font-semibold">{titulo}</h1>
       </div>
       <div className="flex items-center">
-        <div className="p-4 min-w-80">
+        <div className="pt-4 min-w-[450px]">
           <div className="flex items-center justify-between mb-2 border-b pb-2 mt-4">
             <Text className="text-lg">
               Total de participantes:{" "}
@@ -338,14 +368,14 @@ const ShowParticipants = () => {
             <Button
               onClick={handleRestart}
               tone="light"
-              color="purple"
+              color="blue"
               shadow="md"
               shadowColor="dark"
             >
               Reiniciar
             </Button>
             <Link href="/home" passHref>
-              <Button tone="transparent" color="purple" shadow="md">
+              <Button tone="transparent" color="red" shadow="md">
                 Salir
               </Button>
             </Link>
@@ -370,7 +400,6 @@ const ShowParticipants = () => {
                 radiusLineWidth={1}
                 textDistance={distanceRadius}
                 fontSize={fontSize}
-
               />
             </div>
           </div>
@@ -378,7 +407,8 @@ const ShowParticipants = () => {
             <>
               <div className="absolute top-0 left-0">
                 <Confetti
-                  width={window.innerWidth - 30}
+                  className="overflow-hidden"
+                  width={window.innerWidth - 35}
                   height={window.innerHeight - 20}
                 />
               </div>
@@ -421,7 +451,7 @@ const ShowParticipants = () => {
                           weight="medium"
                           className=" text-yellow-600"
                         >
-                          {`0${index + 1}: ${winner}`}
+                          {`${getOrdinal(index + 1)}: ${winner}`}
                         </Text>
                       ))}
                       <div className="border border-b-2 border-dashed border-yellow-200 w-full" />

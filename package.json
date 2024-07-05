@@ -1,7 +1,7 @@
 {
   "private": true,
-  "name": "nextron-gen-certs",
-  "description": "Sistema de generación de certificados",
+  "name": "nextron-roulette",
+  "description": "La Ruleta",
   "version": "1.0.0",
   "author": "Departamento TI - Ecomas",
   "main": "app/background.js",

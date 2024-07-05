@@ -1,5 +1,5 @@
 import Head from "next/head"
-import React, { useState } from "react"
+import React from "react"
 import Formulario from "../components/FormularioPrincipal"
 
 function Home() {
@@ -7,7 +7,7 @@ function Home() {
   return (
     <React.Fragment>
       <Head>
-        <title>Ruleta de la fortuna</title>
+        <title>La Ruleta</title>
       </Head>
       <section className="relative min-h-screen flex justify-center items-center bg-gray-100 dark:bg-gray-900">
       

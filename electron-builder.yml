@@ -1,5 +1,5 @@
-appId: com.nextron.ecomas
-productName: Sistema de Emisión de Certificados
+appId: com.nextron.ecomas.roulette
+productName: La Ruleta
 copyright: Copyright © 2024 Consorcio Ecomas
 directories:
   output: dist
