@@ -69,6 +69,7 @@ const ShowParticipants = () => {
   const [numberOfWinners, setNumberOfWinners] = useState(1) // Número de ganadores seleccionados
   const [winners, setWinners] = useState([]) // Lista de ganadores
   const [predefinedWinners, setPredefinedWinners] = useState([])
+  const [readyToRemove, setReadyToRemove] = useState(false)
 
   const router = useRouter()
 
@@ -131,54 +132,56 @@ const ShowParticipants = () => {
 
   const handleSpinClick = () => {
     if (filteredParticipants.length > 0) {
-      let nextWinner
-
-      if (predefinedWinners.length > winners.length) {
-        // Filtrar predefinedWinners para incluir solo aquellos que estén en la lista de participantes
-        const validPredefinedWinners = predefinedWinners.filter((winner) =>
-          participants.includes(winner)
-        )
-
-        if (validPredefinedWinners.length > winners.length) {
-          // Obtener el próximo ganador predefinido si quedan disponibles
-          nextWinner = validPredefinedWinners[winners.length]
-        } else {
-          // Si no hay más ganadores predefinidos válidos, seleccionar aleatoriamente
-          nextWinner =
-            filteredParticipants[
-              Math.floor(Math.random() * filteredParticipants.length)
-            ]
+      let nextWinner;
+  
+      // Check if there are still predefined winners to select
+      if (winners.length < predefinedWinners.length) {
+        // Get the next predefined winner
+        nextWinner = predefinedWinners[winners.length];
+        
+        // Ensure the predefined winner is in the current participant list
+        if (!participants.includes(nextWinner)) {
+          console.warn(`Predefined winner ${nextWinner} is not in the current participant list. Selecting randomly.`);
+          nextWinner = filteredParticipants[Math.floor(Math.random() * filteredParticipants.length)];
         }
       } else {
-        // Si no hay más ganadores predefinidos, seleccionar aleatoriamente
-        nextWinner =
-          filteredParticipants[
-            Math.floor(Math.random() * filteredParticipants.length)
-          ]
+        // If we've used all predefined winners or there are none, select randomly
+        nextWinner = filteredParticipants[Math.floor(Math.random() * filteredParticipants.length)];
       }
-
-      const winnerIndex = participants.indexOf(nextWinner)
-      setPrizeIndex(winnerIndex) // Establecer el índice del ganador en la ruleta
-      setMustSpin(true) // Activar el giro de la ruleta
-      setSpinningButtonDisabled(true) // Deshabilitar el botón de girar
+  
+      const winnerIndex = participants.indexOf(nextWinner);
+      setPrizeIndex(winnerIndex);
+      setMustSpin(true);
+      setSpinningButtonDisabled(true);
     } else {
-      console.warn("No hay participantes para girar")
+      console.warn("No hay participantes para girar");
+    }
+  };
+
+  const handleStopSpinning = () => {
+    const winnerParticipant = participants[prizeIndex]
+    setWinners((prevWinners) => [...prevWinners, winnerParticipant])
+
+    setMustSpin(false)
+    setSpinningButtonDisabled(false)
+    setReadyToRemove(true) // Preparar para eliminar el participante en el próximo paso
+
+    if (winners.length + 1 >= numberOfWinners) {
+      setAlertVisible(true)
     }
   }
 
-  const handleStopSpinning = () => {
-    const winnerParticipant = participants[prizeIndex];
-    setWinners((prevWinners) => [...prevWinners, winnerParticipant]);
+  const handleRemoveParticipant = () => {
+    const winnerParticipant = participants[prizeIndex]
+    setParticipants((prevParticipants) =>
+      prevParticipants.filter((p) => p !== winnerParticipant)
+    )
     setFilteredParticipants((prevParticipants) =>
       prevParticipants.filter((p) => p !== winnerParticipant)
-    );
-    setMustSpin(false);
-    setSpinningButtonDisabled(false);
-    if (winners.length + 1 >= numberOfWinners) {
-      setAlertVisible(true);
-    }
-  };
-  
+    )
+    setReadyToRemove(false) // Resetear el estado para la próxima ronda
+  }
+
   const handleCloseAlert = () => {
     setAlertVisible(false)
   }
@@ -280,11 +283,11 @@ const ShowParticipants = () => {
               </svg>
             </Button>
           </div>
-          <div className="flex items-center mb-2">
-            <label htmlFor="numberOfWinners" className="mr-2">
+          <div className="flex items-center mb-2 justify-between">
+            <label htmlFor="numberOfWinners" className="mr-2 text-lg">
               Número de ganadores:
             </label>
-            <div className="relative w-full">
+            <div className="relative ">
               <select
                 leftIcon=""
                 color="purple"
@@ -317,48 +320,78 @@ const ShowParticipants = () => {
               </div>
             </div>
           </div>
-          <div className="overflow-auto">
-            <Table className="w-full border max-h-[600px]">
+          <div className="">
+            <Table
+              headerColor="dark"
+              stripePosition="odd"
+              className="w-full max-h-[400px]"
+            >
               <Table.Thead>
-                <tr>
-                  <th className=" p-2 text-left">Nro.</th>
-                  <th className=" p-2 text-left">Nombre</th>
-                  <th></th>
-                </tr>
+                <Table.Tr>
+                  <Table.Th align="left">Nro.</Table.Th>
+                  <Table.Th align="left">Nombre</Table.Th>
+                </Table.Tr>
               </Table.Thead>
-              <tbody>
+              <Table.Tbody>
                 {participants.map((participante, index) => (
-                  <tr
+                  <Table.Tr
                     key={index}
-                    className={
-                      winners.includes(participante)
-                        ? "bg-yellow-100 border-yellow-500 border-2"
-                        : ""
-                    }
+                    color={winners.includes(participante) ? "yellow" : ""}
                   >
-                    <td className="border-b p-2">{index + 1}</td>
-                    <td className="border-b p-2">{participante}</td>
-                    <td className="border-b p-2">
-                      {winners.indexOf(participante) !== -1 &&
-                        `${winners.indexOf(participante) + 1}`}
-                    </td>
-                  </tr>
+                    <Table.Td>{index + 1}</Table.Td>
+                    <Table.Td>{participante}</Table.Td>
+                  </Table.Tr>
                 ))}
-              </tbody>
+              </Table.Tbody>
+            </Table>
+          </div>
+          <div>
+            <Table
+              headerColor="dark"
+              stripePosition="odd"
+              className=" w-full max-h-[200px] mt-2"
+            >
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th align="left">Nro.</Table.Th>
+                  <Table.Th align="left">Ganador</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>
+                {winners.map((winner, index) => (
+                  <Table.Tr key={index} color="yellow">
+                    <Table.Td>{index + 1}</Table.Td>
+                    <Table.Td>{winner}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
             </Table>
           </div>
           <div className="sticky bottom-0 left-0 p-4 flex justify-end space-x-2 border-t w-full border-t-1 mt-2">
+            {readyToRemove && (
+              <Button
+                color="blue"
+                shadow="md"
+                shadowColor="dark"
+                onClick={handleRemoveParticipant}
+              >
+                Continuar
+              </Button>
+            )}
+
             <Button
               color="purple"
               shadow="md"
               shadowColor="dark"
               onClick={handleSpinClick}
               disabled={
-                spinningButtonDisabled || winners.length >= numberOfWinners
+                spinningButtonDisabled ||
+                winners.length >= numberOfWinners ||
+                readyToRemove
               }
               className={
                 winners.length < numberOfWinners && !spinningButtonDisabled
-                  ? "animate-pulse"
+                  ? ""
                   : ""
               }
             >
